@@ -38,12 +38,19 @@ def auto_lot(present_id, conn):  # 抽選するプレゼントID, 接続情報
 
 
 def manual_lot(stock, appliciants):  # int, int[]
-
+    winner = []
+    for i in range(stock):
+        if len(appliciants) == 0:
+            break
+        a = random.randrange(len(appliciants))
+        winner.append(appliciants[a])
+        b = appliciants[a]
     # TODO:randomライブラリを使って，配列からいくつかの要素を弾き出して新しいリストに格納する，ただし，一度出た人はリストから除外
     # 一度出た人を除外するというのは，その人のuser_idをappliciants上からすべて削除することを言う．
     # appliciantsの長さが0になったら強制的にbreak
-
-    return  # stock - 当選者数
+        appliciants = [i for i in appliciants if i != b]
+    print(winner)
+    return  stock - len(winner)
 # end of auto_lot
 
 
