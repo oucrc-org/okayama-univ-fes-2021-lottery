@@ -6,7 +6,30 @@ import random
 import pymysql.cursors
 
 
-def auto_lot(present_id, conn):  # 抽選するプレゼントID, 接続情報
+def auto_lot():
+    # DBに接続
+    conn = pymysql.connect(
+        host=config.host,
+        user=config.user,
+        passwd=config.passwd,
+        db=config.db,
+        port=config.port,
+        charset='utf8',
+        cursorclass=pymysql.cursors.Cursor)
+
+    with conn.cursor() as cursor:  # 抽選するプレゼントの種類数を自動取得
+        sql = "SELECT COUNT(*) FROM presents"
+        cursor.execute(sql)
+        result = cursor.fetchone()
+    present_count = result[0]
+
+    for i in range(present_count):  # 抽選するプレゼントの種類分ループ
+        auto_lot_loop(i + 1, conn)
+
+    conn.close()  # DBから切断
+
+
+def auto_lot_loop(present_id, conn):  # 抽選するプレゼントID, 接続情報
     print("Lotterying present_id = " + str(present_id))
     # 受信処理記述（DB問い合わせ）
     with conn.cursor() as cursor:
@@ -23,10 +46,8 @@ def auto_lot(present_id, conn):  # 抽選するプレゼントID, 接続情報
     # 例 user_id = [1,1,1,1,2,2,2,4,4,12,13,13]
     # カラムstampsの個数分同じuser_idを入れると良い（事実上の抽選確率となる）
     lot_array = make_lot_array(result)
-
-    print(lot_array)
-
-    remained_stock = manual_lot(present_stock, lot_array)
+    # print(lot_array)
+    remained_stock = lot(present_stock, lot_array)
 
     print("Remained stock = " + str(remained_stock))  # 残数表示
     print("")
@@ -34,7 +55,7 @@ def auto_lot(present_id, conn):  # 抽選するプレゼントID, 接続情報
 # end of auto_lot
 
 
-def manual_lot(stock, appliciants):  # int, int[]
+def lot(stock, appliciants):  # int, int[]
     winner = []
     for i in range(stock):
         if len(appliciants) == 0:
@@ -58,24 +79,35 @@ def make_lot_array(user_array):
             lot_array.append(user_array[i][0])
     return lot_array
 
-    # main
-    # DBに接続
-conn = pymysql.connect(
-    host=config.host,
-    user=config.user,
-    passwd=config.passwd,
-    db=config.db,
-    port=config.port,
-    charset='utf8',
-    cursorclass=pymysql.cursors.Cursor)
+# main
 
-with conn.cursor() as cursor:  # 抽選するプレゼントの種類数を自動取得
-    sql = "SELECT COUNT(*) FROM presents"
-    cursor.execute(sql)
-    result = cursor.fetchone()
-present_count = result[0]
 
-for i in range(present_count):  # 抽選するプレゼントの種類分ループ
-    auto_lot(i + 1, conn)
+print("Select lottery mode(Auto:1, Manual:2).")
+mode = int(input())
+if mode < 0 or mode > 3:
+    print("Illegal operation. Process cancelled.")
+    exit
+elif mode == 1:
+    auto_lot()
+elif mode == 2:
+    print("Please input remained_stock.")
+    stock = int(input())
+    id_stamps = []
+    while 1:
+        print("Please input [user_id, stamps] 1set.")
+        temp_str = input()
+        if temp_str == '':
+            break
+        array = list(map(int, temp_str.split(",")))
+        id_stamps.append(array)
+    # endwhile
 
-conn.close()  # DBから切断
+    if len(id_stamps) == 0:
+        print("No [user_id, stamps] list created. Process cancelled.")
+        exit
+
+    lot_array = make_lot_array(id_stamps)
+    # print(id_stamps)
+    remained_stock = lot(stock, lot_array)
+    print("Remained stock = " + str(remained_stock))  # 残数表示
+    print("")
