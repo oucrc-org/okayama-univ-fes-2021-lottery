@@ -22,14 +22,11 @@ def auto_lot(present_id, conn):  # 抽選するプレゼントID, 接続情報
     # サーバに登録されているuser_idをリストに順に格納
     # 例 user_id = [1,1,1,1,2,2,2,4,4,12,13,13]
     # カラムstampsの個数分同じuser_idを入れると良い（事実上の抽選確率となる）
-    user_id = []
-    for i in range(len(result)):
-        for j in range(0, result[i][1]):
-            user_id.append(result[i][0])
+    lot_array = make_lot_array(result)
 
-    # print(user_id)
+    print(lot_array)
 
-    remained_stock = manual_lot(present_stock, user_id)
+    remained_stock = manual_lot(present_stock, lot_array)
 
     print("Remained stock = " + str(remained_stock))  # 残数表示
     print("")
@@ -54,8 +51,15 @@ def manual_lot(stock, appliciants):  # int, int[]
 # end of auto_lot
 
 
-# main
-# DBに接続
+def make_lot_array(user_array):
+    lot_array = []
+    for i in range(len(user_array)):
+        for j in range(0, user_array[i][1]):
+            lot_array.append(user_array[i][0])
+    return lot_array
+
+    # main
+    # DBに接続
 conn = pymysql.connect(
     host=config.host,
     user=config.user,
