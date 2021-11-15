@@ -104,7 +104,7 @@ elif mode == 2:
 
     if len(id_stamps) == 0:
         print("No [user_id, stamps] list created. Process cancelled.")
-        exit
+        exit(1)
 
     lot_array = make_lot_array(id_stamps)
     # print(id_stamps)
