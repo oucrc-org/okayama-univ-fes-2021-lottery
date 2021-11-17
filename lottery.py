@@ -129,7 +129,9 @@ def null_blocker(user_input, value_name):
 
 
 print("Select lottery mode(Auto:1, Manual:2, Auto8:3).")
-mode = int(input())
+mode = input()
+null_blocker(mode, "mode")
+mode = int(mode)
 if mode < 0 or mode > 4:
     print("Illegal operation. Process cancelled.")
     exit
