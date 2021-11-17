@@ -77,7 +77,7 @@ def auto_lot8(stock):  # スタンプ8つ集めた人で景品を分配
     lot_base = []
 
     for i in range(len(result)):
-        a = [result[i][0], result[i][1]]  # 計算コストの削減
+        a = [result[i][0], 1]  # 計算コストの削減
         lot_base.append(a)
 
     lot_array = make_lot_array(lot_base)
