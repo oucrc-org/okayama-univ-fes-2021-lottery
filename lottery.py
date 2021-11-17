@@ -74,10 +74,13 @@ def auto_lot8(stock):  # スタンプ8つ集めた人で景品を分配
         cursor.execute(sql, (8))
         result = cursor.fetchall()
 
-    for i in range(len(result)):
-        result[i][1] = 1  # 計算コストの削減
+    lot_base = []
 
-    lot_array = make_lot_array(result)
+    for i in range(len(result)):
+        a = [result[i][0], result[i][1]]  # 計算コストの削減
+        lot_base.append(a)
+
+    lot_array = make_lot_array(lot_base)
     # print(lot_array)
     remained_stock = lot(stock, lot_array)
 
