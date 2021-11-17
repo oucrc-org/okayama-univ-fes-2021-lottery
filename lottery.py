@@ -6,7 +6,7 @@ import random
 import pymysql.cursors
 
 
-def auto_lot():
+def db_connect():
     # DBに接続
     conn = pymysql.connect(
         host=config.host,
@@ -16,6 +16,14 @@ def auto_lot():
         port=config.port,
         charset='utf8',
         cursorclass=pymysql.cursors.Cursor)
+
+    return conn
+# end of db_connect
+
+
+def auto_lot():
+    # DBに接続
+    conn = db_connect()
 
     with conn.cursor() as cursor:  # 抽選するプレゼントの種類数を自動取得
         sql = "SELECT COUNT(*) FROM presents"
@@ -27,6 +35,8 @@ def auto_lot():
         auto_lot_loop(i + 1, conn)
 
     conn.close()  # DBから切断
+    return
+# end of auto_lot
 
 
 def auto_lot_loop(present_id, conn):  # 抽選するプレゼントID, 接続情報
@@ -52,7 +62,34 @@ def auto_lot_loop(present_id, conn):  # 抽選するプレゼントID, 接続情
     print("Remained stock = " + str(remained_stock))  # 残数表示
     print("")
     return
-# end of auto_lot
+# end of auto_lot_loop
+
+
+def auto_lot8(stock):  # スタンプ8つ集めた人で景品を分配
+    # DBに接続
+    conn = db_connect()
+
+    with conn.cursor() as cursor:  # 抽選するユーザをDBから取得
+        sql = "SELECT user_id, stamps FROM present_user where stamps=%s"
+        cursor.execute(sql, (8))
+        result = cursor.fetchall()
+
+    lot_base = []
+
+    for i in range(len(result)):
+        a = [result[i][0], 1]  # 計算コストの削減
+        lot_base.append(a)
+
+    lot_array = make_lot_array(lot_base)
+    # print(lot_array)
+    remained_stock = lot(stock, lot_array)
+
+    print("Remained stock = " + str(remained_stock))  # 残数表示
+    print("")
+
+    conn.close()
+    return
+# end of auto_lot8
 
 
 def lot(stock, appliciants):  # int, int[]
@@ -69,29 +106,42 @@ def lot(stock, appliciants):  # int, int[]
         appliciants = [i for i in appliciants if i != b]
     print(winner)
     return stock - len(winner)
-# end of auto_lot
+# end of lot
 
 
-def make_lot_array(user_array):
+def make_lot_array(user_array):  # user_arrayが2次元配列でない場合，型エラー
     lot_array = []
     for i in range(len(user_array)):
         for j in range(0, user_array[i][1]):
             lot_array.append(user_array[i][0])
     return lot_array
+# end of make_lot_array
+
+
+def null_blocker(user_input, value_name):
+    if user_input == '':
+        print("You must input " + str(value_name) + ". Process cancelled.")
+        exit(1)
+    return
+# end of null_blocker
 
 # main
 
 
-print("Select lottery mode(Auto:1, Manual:2).")
-mode = int(input())
-if mode < 0 or mode > 3:
+print("Select lottery mode(Auto:1, Manual:2, Auto8:3).")
+mode = input()
+null_blocker(mode, "mode")
+mode = int(mode)
+if mode < 0 or mode > 4:
     print("Illegal operation. Process cancelled.")
     exit
 elif mode == 1:
     auto_lot()
 elif mode == 2:
     print("Please input remained_stock.")
-    stock = int(input())
+    stock = input()
+    null_blocker(stock, "remained_stock")
+    stock = int(stock)
     id_stamps = []
     while 1:
         print("Please input [user_id, stamps] 1set.")
@@ -111,3 +161,9 @@ elif mode == 2:
     remained_stock = lot(stock, lot_array)
     print("Remained stock = " + str(remained_stock))  # 残数表示
     print("")
+elif mode == 3:
+    print("Please input remained_stock.")
+    stock = input()
+    null_blocker(stock, "remained_stock")
+    stock = int(stock)
+    auto_lot8(stock)
