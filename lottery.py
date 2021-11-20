@@ -1,7 +1,11 @@
 # 環境変数の読み込み
 import config
+# 時刻用ライブラリ
+import datetime
 # 乱数用ライブラリ
 import random
+# 環境変数用ライブラリ
+import os
 # MySQL用ライブラリ
 import pymysql.cursors
 
@@ -93,6 +97,7 @@ def auto_lot8(stock):  # スタンプ8つ集めた人で景品を分配
 
 
 def lot(stock, appliciants):  # int, int[]
+    set_seed()
     winner = []
     for i in range(stock):
         if len(appliciants) == 0:
@@ -125,6 +130,16 @@ def null_blocker(user_input, value_name):
     return
 # end of null_blocker
 
+
+def set_seed():
+    pid = os.getpid()
+    dt = datetime.datetime.now()
+    da = dt.date()
+    random.seed(pid + dt.hour + dt.minute + dt.second +
+                dt.microsecond + da.year + da.month + da.day)
+    return
+# end of set_seed
+
 # main
 
 
@@ -134,7 +149,7 @@ null_blocker(mode, "mode")
 mode = int(mode)
 if mode < 0 or mode > 4:
     print("Illegal operation. Process cancelled.")
-    exit
+    exit(1)
 elif mode == 1:
     auto_lot()
 elif mode == 2:
